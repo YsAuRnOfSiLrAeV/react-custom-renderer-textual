@@ -1,0 +1,27 @@
+# Node
+node/node_modules/
+node/package-lock.json
+npm-debug.log*
+
+# Python
+python/.venv/
+python/__pycache__/
+python/*.pyc
+python/*.pyo
+python/*.pyd
+
+# General Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Environment / local tooling
+.env
+.env.*
+.cursor/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

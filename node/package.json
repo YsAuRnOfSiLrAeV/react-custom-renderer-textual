@@ -1,0 +1,15 @@
+{
+  "name": "react-textual-renderer-node",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node renderer-runtime.js"
+  },
+  "dependencies": {
+    "react": "^19.2.5",
+    "react-reconciler": "^0.33.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  }
+}
