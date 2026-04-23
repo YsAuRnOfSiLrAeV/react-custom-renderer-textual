@@ -32,7 +32,21 @@ class RemoveChildOp(BaseModel):
     childId: str
 
 
-Operation = Union[CreateOp, AppendChildOp, UpdatePropsOp, RemoveChildOp]
+class InsertBeforeOp(BaseModel):
+    type: Literal["op"]
+    op: Literal["insertBefore"]
+    parentId: str
+    childId: str
+    beforeChildId: str
+
+
+Operation = Union[
+  CreateOp,
+  AppendChildOp,
+  InsertBeforeOp,
+  UpdatePropsOp,
+  RemoveChildOp,
+]
 
 
 class BatchMessage(BaseModel):

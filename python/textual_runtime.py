@@ -17,20 +17,50 @@ class RendererApp(App):
     def on_mount(self) -> None:
         runtime_state.mount_child = self.mount_child
         runtime_state.update_widget_props = self.update_widget_props
+        runtime_state.unmount_child = self.unmount_child
+        runtime_state.insert_before = self.insert_before
 
         if runtime_state.ui_ready is not None:
             runtime_state.ui_ready.set()
 
+
     def mount_child(self, parent_id: str, child_id: str) -> None:
-        # During initial tree build, child links may arrive before the parent widget
-        # is mounted in Textual. We only start real UI mounting when a subtree is
-        # attached to the protocol root, then mount its already-known descendants.
+        # Mounting is deferred during initial tree build because child links may arrive
+        # before their parent is mounted in Textual. Once a subtree is attached to the
+        # protocol root, we materialize it recursively. Later dynamic appends can be
+        # mounted directly if the target parent widget is already mounted.
+        
         if parent_id == runtime_state.ROOT_ID:
             self._mount_subtree_into_root(child_id)
+            return
+
+        parent_widget = runtime_state.widgets.get(parent_id)
+        child_widget = runtime_state.widgets.get(child_id)
+
+        if parent_widget is None or child_widget is None:
+            return
+
+        if not parent_widget.is_mounted:
+            return
+
+        if child_widget.is_mounted:
+            return
+
+        parent_widget.mount(child_widget)
+        self._mount_existing_children(child_id)
+
+    def unmount_child(self, _parent_id: str, child_id: str) -> None:
+        child_widget = runtime_state.widgets.get(child_id)
+        if child_widget is None:
+            return
+        child_widget.remove()
 
     def _mount_subtree_into_root(self, node_id: str) -> None:
         widget = runtime_state.widgets.get(node_id)
         if widget is None:
+            return
+
+        if widget.is_mounted:
             return
 
         self.renderer_root.mount(widget)
@@ -40,6 +70,7 @@ class RendererApp(App):
         # Children may already exist in the protocol mirror before their parent is
         # physically mounted in Textual. Once the parent is mounted, walk the stored
         # subtree and mount descendants recursively in parent -> child order.
+
         parent_widget = runtime_state.widgets.get(parent_id)
         if parent_widget is None:
             return
@@ -49,6 +80,9 @@ class RendererApp(App):
         for child_id in child_ids:
             child_widget = runtime_state.widgets.get(child_id)
             if child_widget is None:
+                continue
+
+            if child_widget.is_mounted:
                 continue
 
             parent_widget.mount(child_widget)
@@ -94,3 +128,17 @@ class RendererApp(App):
 
         if element_type == "container":
             return
+
+    def insert_before(self, parent_id: str, child_id: str, before_child_id: str) -> None:
+        parent_widget = runtime_state.widgets.get(parent_id)
+        child_widget = runtime_state.widgets.get(child_id)
+        before_child_widget = runtime_state.widgets.get(before_child_id)
+
+        if parent_widget is None or child_widget is None or before_child_widget is None:
+            return
+
+        if child_widget.is_mounted:
+            child_widget.remove()
+
+        parent_widget.mount(child_widget, before=before_child_widget)
+        self._mount_existing_children(child_id)

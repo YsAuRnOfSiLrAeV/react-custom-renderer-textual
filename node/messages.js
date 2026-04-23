@@ -41,3 +41,13 @@ export function createRemoveChildOp(parentId, childId) {
     childId,
   };
 }
+
+export function createInsertBeforeOp(parentId, childId, beforeChildId) {
+  return {
+    type: "op",
+    op: "insertBefore",
+    parentId,
+    childId,
+    beforeChildId,
+  };
+}

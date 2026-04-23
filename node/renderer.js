@@ -3,6 +3,7 @@ import {
   createAppendChildOp,
   createUpdatePropsOp,
   createRemoveChildOp,
+  createInsertBeforeOp,
 } from "./messages.js";
 
 export function createRendererState() {
@@ -26,13 +27,15 @@ export function initializeRendererRoot(rendererState) {
 }
 
 export function createInstance(type, props, rendererState) {
+  const normalizedType = normalizeElementType(type);
+
   const instance = {
     rendererId: createRendererId(),
-    type,
+    type: normalizedType,
     props: sanitizeProps(props),
     parentId: null, // use ids instead of object references to avoid circular logs
     childrenIds: [],
-    eventHandlers: extractEventHandlers(type, props),
+    eventHandlers: extractEventHandlers(normalizedType, props),
   };
 
   rendererState.instanceMap.set(instance.rendererId, instance);
@@ -108,4 +111,74 @@ export function extractEventHandlers(type, props) {
     };
   }
   return {};
+}
+
+export function normalizeElementType(type) {
+  if (type === "textual-container") {
+    return "container";
+  }
+  if (type === "textual-text") {
+    return "text";
+  }
+  if (type === "textual-button") {
+    return "button";
+  }
+  return type;
+}
+
+export function insertChildBefore(parent, child, beforeChild, rendererState) {
+  // React may call insertBefore both for a brand-new child and for reordering
+  // an existing child. If the child is already linked under this parent, remove
+  // the old position first so we can reinsert it at the new index.
+  const existingIndex = parent.childrenIds.indexOf(child.rendererId);
+  if (existingIndex !== -1) {
+    parent.childrenIds.splice(existingIndex, 1);
+  }
+
+  const beforeIndex = parent.childrenIds.indexOf(beforeChild.rendererId);
+  if (beforeIndex === -1) {
+    // If React asks to insert before a child we don't track under this parent,
+    // our runtime tree is already out of sync and should fail loudly.
+    throw new Error("beforeChild not found in parent.childrenIds");
+  }
+
+  parent.childrenIds.splice(beforeIndex, 0, child.rendererId);
+  child.parentId = parent.rendererId;
+
+  rendererState.pendingOps.push(
+    createInsertBeforeOp(
+      parent.rendererId,
+      child.rendererId,
+      beforeChild.rendererId
+    )
+  );
+}
+
+export function insertChildBeforeInRendererState(
+  rendererState,
+  child,
+  beforeChild
+) {
+  const existingIndex = rendererState.rootChildrenIds.indexOf(child.rendererId);
+  if (existingIndex !== -1) {
+    rendererState.rootChildrenIds.splice(existingIndex, 1);
+  }
+
+  const beforeIndex = rendererState.rootChildrenIds.indexOf(
+    beforeChild.rendererId
+  );
+  if (beforeIndex === -1) {
+    throw new Error("beforeChild not found in rendererState.rootChildrenIds");
+  }
+
+  rendererState.rootChildrenIds.splice(beforeIndex, 0, child.rendererId);
+  child.parentId = rendererState.rootId;
+
+  rendererState.pendingOps.push(
+    createInsertBeforeOp(
+      rendererState.rootId,
+      child.rendererId,
+      beforeChild.rendererId
+    )
+  );
 }

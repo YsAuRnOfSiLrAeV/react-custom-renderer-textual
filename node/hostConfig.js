@@ -5,6 +5,8 @@ import {
   appendChildToRendererState as appendRendererChildToState,
   removeChild as removeRendererChild,
   updateProps as updateRendererProps,
+  insertChildBefore as insertRendererChildBefore,
+  insertChildBeforeInRendererState as insertRendererChildBeforeInState,
 } from "./renderer.js";
 
 import {
@@ -184,6 +186,14 @@ export function createHostConfig(rendererState, flushAfterCommit) {
 
     getPublicInstance(instance) {
       return instance;
+    },
+
+    insertBefore(parent, child, beforeChild) {
+      insertRendererChildBefore(parent, child, beforeChild, rendererState);
+    },
+
+    insertInContainerBefore(_container, child, beforeChild) {
+      insertRendererChildBeforeInState(rendererState, child, beforeChild);
     },
   };
 }

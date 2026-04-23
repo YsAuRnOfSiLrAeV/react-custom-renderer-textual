@@ -21,3 +21,9 @@ ui_ready: asyncio.Event | None = None
 
 # Textual runtime registers its update implementation here
 update_widget_props: Callable[[str, dict], None] | None = None
+
+# Textual runtime registers its unmount implementation here
+unmount_child: Callable[[str, str], None] | None = None
+
+# Textual runtime registers its ordered insertion implementation here
+insert_before: Callable[[str, str, str], None] | None = None
