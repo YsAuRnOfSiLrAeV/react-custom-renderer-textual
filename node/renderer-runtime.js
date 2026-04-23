@@ -5,7 +5,7 @@ import { createFramingParser } from "./framing.js";
 import { createRendererState, initializeRendererRoot } from "./renderer.js";
 import { createHostConfig } from "./hostConfig.js";
 import { flushPendingOps } from "./treeTransport.js";
-import { CounterApp } from "./app.js";
+import { CounterApp } from "./App.tsx";
 
 const PORT = 7261;
 
