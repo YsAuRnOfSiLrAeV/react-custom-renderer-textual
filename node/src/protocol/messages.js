@@ -51,3 +51,15 @@ export function createInsertBeforeOp(parentId, childId, beforeChildId) {
     beforeChildId,
   };
 }
+
+export function createLayoutOp(id, x, y, w, h) {
+  return {
+    type: "op",
+    op: "layout",
+    id,
+    x,
+    y,
+    w,
+    h,
+  };
+}

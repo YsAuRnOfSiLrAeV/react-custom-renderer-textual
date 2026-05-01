@@ -40,12 +40,23 @@ class InsertBeforeOp(BaseModel):
     beforeChildId: str
 
 
+class LayoutOp(BaseModel):
+    type: Literal["op"]
+    op: Literal["layout"]
+    id: str
+    x: float
+    y: float
+    w: float
+    h: float
+
+
 Operation = Union[
   CreateOp,
   AppendChildOp,
   InsertBeforeOp,
   UpdatePropsOp,
   RemoveChildOp,
+  LayoutOp,
 ]
 
 

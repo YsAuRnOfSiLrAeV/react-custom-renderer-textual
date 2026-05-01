@@ -41,6 +41,16 @@ def handle_op(op: dict) -> None:
     elif op_type == "insertBefore":
         _handle_insert_before(op)
 
+    elif op_type == "layout":
+        node_id = op["id"]
+        runtime_state.layouts[node_id] = {
+            "x": op["x"],
+            "y": op["y"],
+            "w": op["w"],
+            "h": op["h"],
+        }
+        return
+
 
 def _handle_create(op: dict) -> None:
     node_id = op["id"]

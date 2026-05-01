@@ -1,6 +1,8 @@
+import asyncio
+
 from textual.widgets import Button, Input, Static
 from runtime import runtime_state
-
+from textual.events import Resize
 from textual.app import App, ComposeResult
 from textual.containers import Container
 
@@ -19,6 +21,8 @@ class RendererApp(App):
         runtime_state.update_widget_props = self.update_widget_props
         runtime_state.unmount_child = self.unmount_child
         runtime_state.insert_before = self.insert_before
+        self._viewport_emit_task = None
+        asyncio.create_task(self._emit_viewport_payload())
 
         if runtime_state.ui_ready is not None:
             runtime_state.ui_ready.set()
@@ -103,6 +107,32 @@ class RendererApp(App):
             "targetId": target_id,
             "payload": payload or {},
         })
+
+    async def _emit_viewport_payload(self) -> None:
+        if runtime_state.outgoing_queue is None:
+            return
+        size = self.screen.size
+        await self.emit_event(
+            "viewport",
+            runtime_state.ROOT_ID,
+            {"w": size.width, "h": size.height},
+        )
+
+    async def on_resize(self, event: Resize) -> None:
+        _ = event
+        previous_emit_task = getattr(self, "_viewport_emit_task", None)
+        if previous_emit_task is not None and not previous_emit_task.done():
+            previous_emit_task.cancel()
+        self._viewport_emit_task = asyncio.create_task(
+            self._debounced_emit_viewport()
+        )
+
+    async def _debounced_emit_viewport(self) -> None:
+        try:
+            await asyncio.sleep(0.05)
+        except asyncio.CancelledError:
+            return
+        await self._emit_viewport_payload()
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         renderer_id = getattr(event.button, "_renderer_id", None)

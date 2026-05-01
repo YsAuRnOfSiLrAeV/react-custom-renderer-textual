@@ -27,3 +27,6 @@ unmount_child: Callable[[str, str], None] | None = None
 
 # Textual runtime registers its ordered insertion implementation here
 insert_before: Callable[[str, str, str], None] | None = None
+
+# Latest layout box from Node/Yoga per renderer node id
+layouts: dict[str, dict] = {}

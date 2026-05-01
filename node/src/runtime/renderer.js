@@ -6,6 +6,14 @@ import {
   createInsertBeforeOp,
 } from "../protocol/messages.js";
 
+import {
+  createYogaNode,
+  freeYogaSubtree,
+  applyYogaStyle,
+  applyYogaLeafSizing,
+  yogaReparentAt,
+} from "../layout/yogaUtils.js";
+
 export function createRendererState() {
   return {
     rootId: "root-container",
@@ -13,6 +21,8 @@ export function createRendererState() {
     instanceMap: new Map(), // rendererId -> host instance lookup
     pendingOps: [], // queued renderer operations to send to Python
     isReady: false, // true after Python runtime sends the ready message
+    viewport: { w: 80, h: 24 }, // terminal size in cells, updated by Python viewport events
+    rootYogaNode: createYogaNode(),
   };
 }
 
@@ -21,6 +31,7 @@ export function createRendererId() {
 }
 
 export function initializeRendererRoot(rendererState) {
+  applyYogaStyle(rendererState.rootYogaNode, { flexDirection: "column" });
   rendererState.pendingOps.push(
     createCreateOp(rendererState.rootId, "root", {})
   );
@@ -29,6 +40,10 @@ export function initializeRendererRoot(rendererState) {
 export function createInstance(type, props, rendererState) {
   const normalizedType = normalizeElementType(type);
 
+  const yogaNode = createYogaNode();
+  applyYogaStyle(yogaNode, props?.style);
+  applyYogaLeafSizing(normalizedType, yogaNode, props);
+
   const instance = {
     rendererId: createRendererId(),
     type: normalizedType,
@@ -36,6 +51,7 @@ export function createInstance(type, props, rendererState) {
     parentId: null, // use ids instead of object references to avoid circular logs
     childrenIds: [],
     eventHandlers: extractEventHandlers(normalizedType, props),
+    yogaNode,
   };
 
   rendererState.instanceMap.set(instance.rendererId, instance);
@@ -50,6 +66,9 @@ export function createInstance(type, props, rendererState) {
 export function appendChildToRendererState(rendererState, child) {
   rendererState.rootChildrenIds.push(child.rendererId);
 
+  const rootIndex = rendererState.rootChildrenIds.length - 1;
+  yogaReparentAt(rendererState.rootYogaNode, child.yogaNode, rootIndex);
+
   rendererState.pendingOps.push(
     createAppendChildOp(rendererState.rootId, child.rendererId)
   );
@@ -58,6 +77,9 @@ export function appendChildToRendererState(rendererState, child) {
 export function appendChild(parent, child, rendererState) {
   parent.childrenIds.push(child.rendererId);
   child.parentId = parent.rendererId;
+
+  const childIndex = parent.childrenIds.length - 1;
+  yogaReparentAt(parent.yogaNode, child.yogaNode, childIndex);
 
   rendererState.pendingOps.push(
     createAppendChildOp(parent.rendererId, child.rendererId)
@@ -69,6 +91,15 @@ export function removeChild(parent, child, rendererState) {
     (childId) => childId !== child.rendererId
   );
   child.parentId = null;
+
+  try {
+    if (parent.yogaNode && child.yogaNode) {
+      parent.yogaNode.removeChild(child.yogaNode);
+    }
+  } catch {}
+  freeYogaSubtree(child.yogaNode);
+  child.yogaNode = null;
+  
   rendererState.pendingOps.push(
     createRemoveChildOp(parent.rendererId, child.rendererId)
   );
@@ -79,6 +110,9 @@ export function updateProps(instance, nextProps, rendererState) {
 
   instance.props = sanitizedNextProps;
   instance.eventHandlers = extractEventHandlers(instance.type, nextProps);
+
+  applyYogaStyle(instance.yogaNode, nextProps?.style);
+  applyYogaLeafSizing(instance.type, instance.yogaNode, nextProps);
 
   rendererState.pendingOps.push(
     createUpdatePropsOp(instance.rendererId, sanitizedNextProps)
@@ -155,6 +189,9 @@ export function insertChildBefore(parent, child, beforeChild, rendererState) {
   parent.childrenIds.splice(beforeIndex, 0, child.rendererId);
   child.parentId = parent.rendererId;
 
+  const childIndex = parent.childrenIds.indexOf(child.rendererId);
+  yogaReparentAt(parent.yogaNode, child.yogaNode, childIndex);
+
   rendererState.pendingOps.push(
     createInsertBeforeOp(
       parent.rendererId,
@@ -183,6 +220,9 @@ export function insertChildBeforeInRendererState(
 
   rendererState.rootChildrenIds.splice(beforeIndex, 0, child.rendererId);
   child.parentId = rendererState.rootId;
+
+  const childIndex = rendererState.rootChildrenIds.indexOf(child.rendererId);
+  yogaReparentAt(rendererState.rootYogaNode, child.yogaNode, childIndex);
 
   rendererState.pendingOps.push(
     createInsertBeforeOp(

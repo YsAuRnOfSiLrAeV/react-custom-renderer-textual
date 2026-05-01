@@ -6,6 +6,8 @@ import { createRendererState, initializeRendererRoot } from "./runtime/renderer.
 import { createHostConfig } from "./reconciler/hostConfig.js";
 import { flushPendingOps } from "./transport/treeTransport.js";
 import { TodoApp } from "./app/App.tsx";
+import { recalculateYogaLayout, debugLogYogaLayout } from "./runtime/yogaHost.js";
+import { pushLayoutOpsFromYoga } from "./layout/yogaUtils.js";
 
 const PORT = 7261;
 
@@ -17,6 +19,9 @@ const server = net.createServer((socket) => {
   initializeRendererRoot(rendererState);
 
   const flushAfterCommit = () => {
+    flushPendingOps(socket, rendererState);
+    recalculateYogaLayout(rendererState);
+    pushLayoutOpsFromYoga(rendererState);
     flushPendingOps(socket, rendererState);
   };
 
@@ -50,6 +55,18 @@ const server = net.createServer((socket) => {
       console.log("[node] <-", message);
 
       if (message.type === "event") {
+        if (message.eventName === "viewport") {
+          const w = message.payload?.w;
+          const h = message.payload?.h;
+          if (typeof w === "number" && typeof h === "number") {
+            rendererState.viewport = { w, h };
+            recalculateYogaLayout(rendererState);
+            pushLayoutOpsFromYoga(rendererState);
+            flushPendingOps(socket, rendererState);
+          }
+          return;
+        }
+      
         const targetInstance = rendererState.instanceMap.get(message.targetId);
         const handler = targetInstance?.eventHandlers?.[message.eventName];
         if (typeof handler === "function") {
