@@ -12,7 +12,7 @@ It focuses on:
 
 ## Entry Point
 
-The main entry point is `node/renderer-runtime.js`.
+The main entry point is `node/src/renderer-runtime.js`.
 
 That file:
 
@@ -41,7 +41,7 @@ Scoping it per connection prevents:
 
 ## Host Config Role
 
-`node/hostConfig.js` is the adapter between React reconciliation and the plain runtime helpers in `node/renderer.js`.
+`node/src/reconciler/hostConfig.js` is the adapter between React reconciliation and the plain runtime helpers in `node/src/runtime/renderer.js`.
 
 React does not know how to create a Textual button or how to send a TCP batch.
 
@@ -75,7 +75,7 @@ This keeps the React-facing adapter separate from the renderer state and transpo
 
 ## What The Runtime Helpers Do
 
-`node/renderer.js` owns the actual renderer-side tree bookkeeping.
+`node/src/runtime/renderer.js` owns the actual renderer-side tree bookkeeping.
 
 Its helpers are responsible for:
 
@@ -105,7 +105,7 @@ The host config calls `flushAfterCommit()` from `resetAfterCommit()`.
 
 That gives the renderer one consistent place to flush all pending operations after a commit finishes.
 
-The actual transport write is performed by `node/treeTransport.js`, which sends the batch only when:
+The actual transport write is performed by `node/src/transport/treeTransport.js`, which sends the batch only when:
 
 - Python is connected;
 - Python has sent `ready`;
@@ -113,7 +113,7 @@ The actual transport write is performed by `node/treeTransport.js`, which sends 
 
 ## Reverse Events Back Into React
 
-Incoming socket messages are parsed in `renderer-runtime.js`.
+Incoming socket messages are parsed in `node/src/renderer-runtime.js`.
 
 For `event` messages, Node:
 

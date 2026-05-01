@@ -1,9 +1,8 @@
 import asyncio
 
-import runtime_state
-
-from connection_loops import read_loop, write_loop
-from textual_runtime import RendererApp
+from runtime import runtime_state
+from transport.connection_loops import read_loop, write_loop
+from runtime.textual_runtime import RendererApp
 
 PORT = 7261
 

@@ -1,11 +1,11 @@
 import net from "node:net";
 import React from "react";
 import ReactReconciler from "react-reconciler";
-import { createFramingParser } from "./framing.js";
-import { createRendererState, initializeRendererRoot } from "./renderer.js";
-import { createHostConfig } from "./hostConfig.js";
-import { flushPendingOps } from "./treeTransport.js";
-import { CounterApp } from "./App.tsx";
+import { createFramingParser } from "./transport/framing.js";
+import { createRendererState, initializeRendererRoot } from "./runtime/renderer.js";
+import { createHostConfig } from "./reconciler/hostConfig.js";
+import { flushPendingOps } from "./transport/treeTransport.js";
+import { TodoApp } from "./app/App.tsx";
 
 const PORT = 7261;
 
@@ -37,7 +37,7 @@ const server = net.createServer((socket) => {
   );
 
   reconciler.updateContainerSync(
-    React.createElement(CounterApp),
+    React.createElement(TodoApp),
     root,
     null,
     null
@@ -51,7 +51,10 @@ const server = net.createServer((socket) => {
 
       if (message.type === "event") {
         const targetInstance = rendererState.instanceMap.get(message.targetId);
-        targetInstance?.eventHandlers?.press?.();
+        const handler = targetInstance?.eventHandlers?.[message.eventName];
+        if (typeof handler === "function") {
+          handler(message.payload);
+        }
         reconciler.flushSyncWork();
         flushPendingOps(socket, rendererState);
         return;

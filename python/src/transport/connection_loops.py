@@ -1,9 +1,9 @@
 import asyncio
 import json
 
-from dispatcher import handle_message
-from protocol import send_message
-from schemas import BatchMessage
+from runtime.dispatcher import handle_message
+from transport.socket_transport import send_message
+from protocol.schemas import BatchMessage
 
 async def read_loop(reader: asyncio.StreamReader) -> None:
     while True:

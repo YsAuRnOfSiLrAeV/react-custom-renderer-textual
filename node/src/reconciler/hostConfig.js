@@ -7,7 +7,7 @@ import {
   updateProps as updateRendererProps,
   insertChildBefore as insertRendererChildBefore,
   insertChildBeforeInRendererState as insertRendererChildBeforeInState,
-} from "./renderer.js";
+} from "../runtime/renderer.js";
 
 import {
   DefaultEventPriority,

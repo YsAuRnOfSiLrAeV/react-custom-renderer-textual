@@ -23,6 +23,10 @@ Python-side documentation:
 - `textual-integration.md` - how the Textual app owns the live UI tree
 - `runtime-model.md` - Python-side mirror state and widget registry
 
+## Code layout note
+
+Runtime code lives under `node/src/` and `python/src/`. Paths in these docs refer to those folders.
+
 ## Suggested Reading Order
 
 If you are new to the project:

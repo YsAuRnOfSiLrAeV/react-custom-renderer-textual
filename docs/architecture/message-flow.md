@@ -14,7 +14,7 @@ It focuses on:
 
 ### 1. Node starts the TCP server
 
-`node/renderer-runtime.js` starts a TCP server and prepares a connection-scoped `rendererState`.
+`node/src/renderer-runtime.js` starts a TCP server and prepares a connection-scoped `rendererState`.
 
 ### 2. Node creates the React root
 
@@ -24,7 +24,7 @@ At this point, the reconciler may already produce host instances and queue mutat
 
 ### 3. Python starts Textual
 
-`python/main.py` creates:
+`python/src/main.py` creates:
 - `runtime_state.outgoing_queue`;
 - `runtime_state.ui_ready`;
 - `RendererApp`.
@@ -133,8 +133,8 @@ These callbacks are owned by `RendererApp` and handle the real Textual widget tr
 - reorder children with `insert_before`.
 
 This split is important:
-- `dispatcher.py` applies protocol semantics;
-- `textual_runtime.py` applies Textual lifecycle semantics.
+- `python/src/runtime/dispatcher.py` applies protocol semantics;
+- `python/src/runtime/textual_runtime.py` applies Textual lifecycle semantics.
 
 ## Why Forward Flow Is Split Across Layers
 

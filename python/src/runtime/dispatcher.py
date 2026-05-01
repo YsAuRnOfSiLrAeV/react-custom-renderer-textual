@@ -1,5 +1,5 @@
-import runtime_state
-from widget_factory import create_widget
+from runtime import runtime_state
+from runtime.widget_factory import create_widget
 
 
 def handle_message(message: dict) -> None:

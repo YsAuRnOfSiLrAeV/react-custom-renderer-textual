@@ -1,23 +1,33 @@
 import "react";
 
+type WithKey = React.Attributes;
+
 declare module "react" {
   namespace JSX {
     interface IntrinsicElements {
-      "textual-container": {
+      "textual-container": WithKey & {
         id?: string;
         children?: React.ReactNode;
+        style?: { flexDirection?: "row" | "column"; gap?: number };
       };
 
-      "textual-text": {
+      "textual-text": WithKey & {
         id?: string;
-        text: string;
+        text?: string;
       };
 
-      "textual-button": {
+      "textual-button": WithKey & {
         id?: string;
-        label: string;
+        label?: string;
         onPress?: () => void;
-        onClick?: () => void;
+      };
+
+      "textual-input": WithKey & {
+        id?: string;
+        value?: string;
+        placeholder?: string;
+        onChange?: (payload: { value: string }) => void;
+        onSubmit?: (payload: { value: string }) => void;
       };
     }
   }

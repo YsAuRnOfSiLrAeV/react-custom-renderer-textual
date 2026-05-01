@@ -1,5 +1,5 @@
-from textual.widgets import Button, Static
-import runtime_state
+from textual.widgets import Button, Input, Static
+from runtime import runtime_state
 
 from textual.app import App, ComposeResult
 from textual.containers import Container
@@ -111,6 +111,18 @@ class RendererApp(App):
 
         await self.emit_event("press", renderer_id, {})
 
+    async def on_input_changed(self, event: Input.Changed) -> None:
+        renderer_id = getattr(event.input, "_renderer_id", None)
+        if renderer_id is None:
+            return
+        await self.emit_event("change", renderer_id, {"value": event.value})
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        renderer_id = getattr(event.input, "_renderer_id", None)
+        if renderer_id is None:
+            return
+        await self.emit_event("submit", renderer_id, {"value": event.value})
+
     def update_widget_props(self, node_id: str, props: dict) -> None:
         widget = runtime_state.widgets.get(node_id)
         if widget is None:
@@ -127,6 +139,16 @@ class RendererApp(App):
             return
 
         if element_type == "container":
+            return
+
+        if element_type == "input" and isinstance(widget, Input):
+            next_value = props.get("value")
+            if isinstance(next_value, str) and widget.value != next_value:
+                widget.value = next_value
+
+            placeholder = props.get("placeholder")
+            if isinstance(placeholder, str):
+                widget.placeholder = placeholder
             return
 
     def insert_before(self, parent_id: str, child_id: str, before_child_id: str) -> None:

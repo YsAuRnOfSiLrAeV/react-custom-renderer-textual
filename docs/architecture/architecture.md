@@ -63,11 +63,11 @@ The Node process is responsible for:
 
 Important files:
 
-- `node/renderer-runtime.js`
-- `node/hostConfig.js`
-- `node/renderer.js`
-- `node/treeTransport.js`
-- `node/messages.js`
+- `node/src/renderer-runtime.js`
+- `node/src/reconciler/hostConfig.js`
+- `node/src/runtime/renderer.js`
+- `node/src/transport/treeTransport.js`
+- `node/src/protocol/messages.js`
 
 ## Python Responsibilities
 
@@ -81,12 +81,12 @@ The Python process is responsible for:
 
 Important files:
 
-- `python/main.py`
-- `python/connection_loops.py`
-- `python/dispatcher.py`
-- `python/runtime_state.py`
-- `python/textual_runtime.py`
-- `python/widget_factory.py`
+- `python/src/main.py`
+- `python/src/transport/connection_loops.py`
+- `python/src/runtime/dispatcher.py`
+- `python/src/runtime/runtime_state.py`
+- `python/src/runtime/textual_runtime.py`
+- `python/src/runtime/widget_factory.py`
 
 ## Current Runtime Boundary
 
@@ -143,7 +143,7 @@ At a high level, the repository currently looks like this:
 - `python/` - Textual runtime and protocol application
 - `docs/` - architecture and runtime notes
 
-The runtime code is still relatively flat inside `node/` and `python/`.
+The runtime code is organized under `node/src/` and `python/src/`.
 
 One planned next step is to split those folders further into clearer runtime and transport subareas once the behavior is more stable.
 

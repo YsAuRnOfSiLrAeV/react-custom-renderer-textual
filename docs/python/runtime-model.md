@@ -24,7 +24,7 @@ It is responsible for:
 
 ## Runtime State
 
-Current runtime state is shared through `python/runtime_state.py`.
+Current runtime state is shared through `python/src/runtime/runtime_state.py`.
 
 Important fields include:
 
@@ -126,7 +126,7 @@ Python is intentionally split into two layers.
 - update `nodes`;
 - call runtime callbacks when needed.
 
-`textual_runtime.py` is responsible for Textual semantics:
+`python/src/runtime/textual_runtime.py` is responsible for Textual semantics:
 - create widgets;
 - mount into the actual UI tree;
 - update widget props;

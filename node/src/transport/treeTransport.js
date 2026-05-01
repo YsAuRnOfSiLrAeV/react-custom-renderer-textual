@@ -1,5 +1,5 @@
-import { sendFramingMessage } from "./framing.js";
-import { createBatchMessage } from "./messages.js";
+import { sendFramingMessage } from "../transport/framing.js";
+import { createBatchMessage } from "../protocol/messages.js";
 
 export function flushPendingOps(socket, rendererState) {
   if (!rendererState.isReady) {

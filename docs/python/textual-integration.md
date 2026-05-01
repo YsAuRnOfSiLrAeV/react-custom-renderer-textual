@@ -12,7 +12,7 @@ It focuses on:
 
 ## Entry Point
 
-The main Python entry point is `python/main.py`.
+The main Python entry point is `python/src/main.py`.
 
 That file:
 
@@ -36,7 +36,7 @@ Waiting for `on_mount()` makes startup slightly stricter, but removes a whole cl
 
 ## Why `RendererApp` Owns The UI
 
-`python/textual_runtime.py` defines `RendererApp`.
+`python/src/runtime/textual_runtime.py` defines `RendererApp`.
 
 `RendererApp` owns the live Textual widget tree because it is the only place that should directly deal with:
 

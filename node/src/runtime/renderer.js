@@ -4,7 +4,7 @@ import {
   createUpdatePropsOp,
   createRemoveChildOp,
   createInsertBeforeOp,
-} from "./messages.js";
+} from "../protocol/messages.js";
 
 export function createRendererState() {
   return {
@@ -78,6 +78,7 @@ export function updateProps(instance, nextProps, rendererState) {
   const sanitizedNextProps = sanitizeProps(nextProps);
 
   instance.props = sanitizedNextProps;
+  instance.eventHandlers = extractEventHandlers(instance.type, nextProps);
 
   rendererState.pendingOps.push(
     createUpdatePropsOp(instance.rendererId, sanitizedNextProps)
@@ -110,6 +111,12 @@ export function extractEventHandlers(type, props) {
       press: props.onPress ?? props.onClick ?? null,
     };
   }
+  if (type === "input") {
+    return {
+      change: props.onChange ?? props.onChangeText ?? null,
+      submit: props.onSubmit ?? null,
+    };
+  }
   return {};
 }
 
@@ -122,6 +129,9 @@ export function normalizeElementType(type) {
   }
   if (type === "textual-button") {
     return "button";
+  }
+  if (type === "textual-input") {
+    return "input";
   }
   return type;
 }

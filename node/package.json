@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "tsx renderer-runtime.js"
+    "start": "tsx src/renderer-runtime.js"
   },
   "dependencies": {
     "react": "^19.2.5",
